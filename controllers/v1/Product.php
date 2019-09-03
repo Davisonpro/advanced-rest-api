@@ -261,6 +261,51 @@ class Product extends Route {
 			'message' => 'Product deleted successfully'
 		]);
 	}
+	
+	public function searchProducts() {
+		$api = $this->api;
+		$params = $api->request()->get(); 
+
+		$name = ArrayUtils::get($params, 'name');
+		$description = ArrayUtils::get($params, 'description');
+
+		if(!$name && !$description) {
+			return $api->response([
+				'success' => false,
+				'message' => 'Enter name or description of the product'
+			]);
+		}
+
+		// Build query
+		$sql = new DbQuery();
+		// Build SELECT
+		$sql->select('product.*');
+		// Build FROM
+		$sql->from('product', 'product');
+
+		// prevent sql from searching a NULL value if wither name or description is not provided eg. WHERE name = null
+		$where_clause = array();
+		if($name) {
+			$where_clause[] = 'product.name LIKE \'%' . pSQL($name) . '%\'';
+		}
+
+		if ($description) {
+			$where_clause[] = 'product.description LIKE \'%' . pSQL($description) . '%\'';
+		}
+
+		// join the search terms
+		$where_clause = implode(' OR ', $where_clause);
+
+		// Build WHERE
+		$sql->where($where_clause);
+
+		$products = Db::getInstance()->executeS($sql);
+
+		return $api->response([
+			'success' => true,
+			'products' => $products
+		]);
+	}
 }
 
 
