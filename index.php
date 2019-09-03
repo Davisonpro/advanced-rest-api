@@ -101,6 +101,9 @@ $api->group('/api', function () use ($api) {
 			$api->post('/?', '\BestShop\v1\Category:addCategory')->name('add_category');
 	
 		});
+		
+		/** search products */
+		$api->get('/search?', '\BestShop\v1\Product:searchProducts')->name('search_products');
 	});
 });
 
